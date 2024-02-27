@@ -1,7 +1,6 @@
 package com.tekion.cricketgame.model;
 
 import org.springframework.data.annotation.Id;
-import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 @Document(collection = "player_stats")
@@ -9,8 +8,8 @@ public class PlayerStats {
 
     @Id
     private String id;
-    @Indexed(unique = true)
-    private Long playerId;
+
+    private String playerId;
     private int runs;
     private int ballsFaced;
     private int wicketsTaken;
@@ -18,7 +17,7 @@ public class PlayerStats {
     public PlayerStats() {
     }
 
-    public PlayerStats(Long playerId, int runs, int ballsFaced, int wicketsTaken) {
+    public PlayerStats(String playerId, int runs, int ballsFaced, int wicketsTaken) {
         this.playerId = playerId;
         this.runs = runs;
         this.ballsFaced = ballsFaced;
@@ -33,11 +32,11 @@ public class PlayerStats {
         this.id = id;
     }
 
-    public Long getPlayerId() {
+    public String getPlayerId() {
         return playerId;
     }
 
-    public void setPlayerId(Long playerId) {
+    public void setPlayerId(String playerId) {
         this.playerId = playerId;
     }
 
