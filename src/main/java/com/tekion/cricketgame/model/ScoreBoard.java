@@ -12,7 +12,7 @@ public class ScoreBoard {
     private String id;
 
     @Indexed(unique = true)
-    private String matchId;
+    private Long matchId;
 
     private InningSummary firstInnings;
 
@@ -22,7 +22,7 @@ public class ScoreBoard {
     public ScoreBoard() {
     }
 
-    public ScoreBoard(String matchId, InningSummary firstInnings, InningSummary secondInnings) {
+    public ScoreBoard(Long matchId, InningSummary firstInnings, InningSummary secondInnings) {
         this.matchId = matchId;
         this.firstInnings = firstInnings;
         this.secondInnings = secondInnings;
@@ -36,11 +36,11 @@ public class ScoreBoard {
         this.id = id;
     }
 
-    public String getMatchId() {
+    public Long getMatchId() {
         return matchId;
     }
 
-    public void setMatchId(String matchId) {
+    public void setMatchId(Long matchId) {
         this.matchId = matchId;
     }
 
