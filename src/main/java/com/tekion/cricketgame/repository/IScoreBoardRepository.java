@@ -6,4 +6,6 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 public interface IScoreBoardRepository extends MongoRepository<ScoreBoard,Long> {
+
+    ScoreBoard findByMatchId(Long matchId);
 }

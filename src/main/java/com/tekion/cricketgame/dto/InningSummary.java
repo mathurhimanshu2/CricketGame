@@ -3,11 +3,15 @@ package com.tekion.cricketgame.dto;
 public class InningSummary {
 
     private BattingDetails battingDetails;
-    private BallingDetails ballingDetails;
+    private BowlingDetails bowlingDetails;
 
-    public InningSummary(BattingDetails battingDetails, BallingDetails ballingDetails) {
+    public InningSummary(){
+
+    }
+
+    public InningSummary(BattingDetails battingDetails, BowlingDetails bowlingDetails) {
         this.battingDetails = battingDetails;
-        this.ballingDetails = ballingDetails;
+        this.bowlingDetails = bowlingDetails;
     }
 
     public BattingDetails getBattingDetails() {
@@ -18,11 +22,11 @@ public class InningSummary {
         this.battingDetails = battingDetails;
     }
 
-    public BallingDetails getBallingDetails() {
-        return ballingDetails;
+    public BowlingDetails getBallingDetails() {
+        return bowlingDetails;
     }
 
-    public void setBallingDetails(BallingDetails ballingDetails) {
-        this.ballingDetails = ballingDetails;
+    public void setBallingDetails(BowlingDetails bowlingDetails) {
+        this.bowlingDetails = bowlingDetails;
     }
 }

@@ -1,30 +1,35 @@
 package com.tekion.cricketgame.dto;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 
 public class BattingDetails {
 
-    private String team;
-    private HashMap<String, PlayerBattingStats> playerBattingHashMap;
+    private Long teamId;
+    private ArrayList<PlayerBattingStats> playerBattingList;
 
-    public BattingDetails(String team, HashMap<String, PlayerBattingStats> playerBattingHashMap) {
-        this.team = team;
-        this.playerBattingHashMap = playerBattingHashMap;
+    public BattingDetails(){
+
     }
 
-    public String getTeam() {
-        return team;
+    public BattingDetails(Long teamId, ArrayList<PlayerBattingStats> playerBattingList) {
+        this.teamId = teamId;
+        this.playerBattingList = playerBattingList;
     }
 
-    public void setTeam(String team) {
-        this.team = team;
+    public Long getTeamId() {
+        return teamId;
     }
 
-    public HashMap<String, PlayerBattingStats> getPlayerBattingHashMap() {
-        return playerBattingHashMap;
+    public void setTeamId(Long teamId) {
+        this.teamId = teamId;
     }
 
-    public void setPlayerBattingHashMap(HashMap<String, PlayerBattingStats> playerBattingHashMap) {
-        this.playerBattingHashMap = playerBattingHashMap;
+    public ArrayList<PlayerBattingStats> getPlayerBattingList() {
+        return playerBattingList;
+    }
+
+    public void setPlayerBattingList(ArrayList<PlayerBattingStats> playerBattingList) {
+        this.playerBattingList = playerBattingList;
     }
 }

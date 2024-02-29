@@ -1,27 +1,27 @@
 package com.tekion.cricketgame.dto;
 
-public class PlayerBallingStats {
+public class PlayerBowlingStats {
 
-    private String name;
+    private Long playerId;
     private int overs;
     private int wickets;
 
-    public PlayerBallingStats(String name, int overs, int wickets) {
-        this.name = name;
+    public PlayerBowlingStats(Long playerId, int overs, int wickets) {
+        this.playerId = playerId;
         this.overs = overs;
         this.wickets = wickets;
     }
 
-    public PlayerBallingStats() {
+    public PlayerBowlingStats() {
 
     }
 
-    public String getName() {
-        return name;
+    public Long getPlayerId() {
+        return playerId;
     }
 
-    public void setName(String name) {
-        this.name = name;
+    public void setPlayerId(Long playerId) {
+        this.playerId = playerId;
     }
 
     public int getOvers() {
