@@ -2,7 +2,7 @@ package com.tekion.cricketgame.model;
 
 import jakarta.persistence.*;
 @Entity
-@Table(name = "'match'")
+@Table(name = "cricket-match")
 public class Match {
 
     @Id

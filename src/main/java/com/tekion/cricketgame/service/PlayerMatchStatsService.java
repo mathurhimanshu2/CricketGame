@@ -15,7 +15,15 @@ public class PlayerMatchStatsService {
     IPlayerMatchStatsRepository playerMatchStatsRepository;
 
     public PlayerMatchStats findByPlayerIdAndMatchId(Long playerId, Long matchId){
-        return playerMatchStatsRepository.findByPlayerIdAndMatchId(playerId, matchId);
+
+        PlayerMatchStats playerMatchStats = playerMatchStatsRepository.findByPlayerIdAndMatchId(playerId,matchId);
+        if (playerMatchStats!=null){
+            return playerMatchStats;
+        } else {
+            playerMatchStats = new PlayerMatchStats(playerId,matchId);
+            playerMatchStatsRepository.save(playerMatchStats);
+            return playerMatchStats;
+        }
     }
 
 

@@ -6,13 +6,38 @@ import com.tekion.cricketgame.repository.ITeamRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
+import java.util.Optional;
+
 @Service
 public class TeamService {
-
     @Autowired
     private ITeamRepository teamRepository;
 
-    public Team savePlayer(Team team) {
+    public List<Team> getAllTeams() {
+        return teamRepository.findAll();
+    }
+
+    public Team getTeamById(Long id) {
+        Optional<Team> teamOptional = teamRepository.findById(id);
+        return teamOptional.orElse(null);
+    }
+
+    public Team saveTeam(Team team) {
         return teamRepository.save(team);
+    }
+
+    public void deleteTeam(Long id) {
+        teamRepository.deleteById(id);
+    }
+
+    public Team updateTeam(Long id, Team updatedTeam) {
+        Optional<Team> teamOptional = teamRepository.findById(id);
+        if (teamOptional.isPresent()) {
+            Team team = teamOptional.get();
+            team.setTeamName(updatedTeam.getTeamName());
+            return teamRepository.save(team);
+        }
+        return null;
     }
 }

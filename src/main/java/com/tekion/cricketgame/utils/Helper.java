@@ -10,10 +10,11 @@ import com.tekion.cricketgame.service.ScoreCardService;
 import com.tekion.cricketgame.service.TeamMatchStatsService;
 import com.tekion.cricketgame.utils.enums.Ball;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
 import java.util.Random;
-
+@Component
 public class Helper {
 
     @Autowired
@@ -47,7 +48,7 @@ public class Helper {
         }
     }
 
-    private void simulateMatch(Match match){
+    public void simulateMatch(Match match){
 
         InningSummary firstInnings = simulateFirstInnings(match);
         InningSummary secondInnings = simulateSecondInnings(match);
@@ -65,7 +66,7 @@ public class Helper {
 
         for(int ballNumber = 1; ballNumber <= totalBalls && currentBatsman < 11; ballNumber++){
 
-            if(ballNumber%6==1){
+            if(ballNumber%6==0){
                 currentBaller = changeBowler(currentBaller);
             }
             Ball result = simulateBall();
@@ -142,7 +143,7 @@ public class Helper {
 
         for(int ballNumber = 1; ballNumber <= totalBalls && currentBatsman < 11; ballNumber++){
 
-            if(ballNumber%6==1){
+            if(ballNumber%6 == 0){
                 currentBaller = changeBowler(currentBaller);
             }
             Ball result = simulateBall();

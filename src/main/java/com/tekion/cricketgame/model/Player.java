@@ -1,9 +1,11 @@
 package com.tekion.cricketgame.model;
 
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 @Entity
 @Table(name = "player")
+@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 public class Player {
 
     @Id
@@ -14,7 +16,7 @@ public class Player {
     @Column(name = "player_name")
     private String playerName;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "team_id")
     private Team team;
 
