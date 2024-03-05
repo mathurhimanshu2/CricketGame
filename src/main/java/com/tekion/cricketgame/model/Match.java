@@ -13,11 +13,11 @@ public class Match {
     @Column(name = "overs")
     private int overs;
 
-    @OneToOne(cascade = CascadeType.ALL)
+    @ManyToOne(cascade = CascadeType.ALL)
     @JoinColumn(name = "team1_id")
     private Team team1;
 
-    @OneToOne(cascade = CascadeType.ALL)
+    @ManyToOne(cascade = CascadeType.ALL)
     @JoinColumn(name = "team2_id")
     private Team team2;
 

@@ -1,6 +1,7 @@
 package com.tekion.cricketgame.model;
 
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 @Entity
@@ -17,6 +18,7 @@ public class Player {
     private String playerName;
 
     @ManyToOne(fetch = FetchType.EAGER)
+    @JsonBackReference
     @JoinColumn(name = "team_id")
     private Team team;
 

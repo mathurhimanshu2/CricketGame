@@ -1,6 +1,7 @@
 package com.tekion.cricketgame.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.persistence.*;
 
@@ -18,7 +19,8 @@ public class Team {
     @JsonProperty("team_name")
     private String teamName;
 
-    @OneToMany(mappedBy = "team", cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "team",cascade = CascadeType.ALL)
+    @JsonManagedReference
     private List<Player> players;
 
     public Team() {

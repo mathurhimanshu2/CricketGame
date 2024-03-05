@@ -1,10 +1,8 @@
 package com.tekion.cricketgame.utils;
 
 import com.tekion.cricketgame.dto.*;
-import com.tekion.cricketgame.model.Match;
-import com.tekion.cricketgame.model.Player;
-import com.tekion.cricketgame.model.PlayerMatchStats;
-import com.tekion.cricketgame.model.Team;
+import com.tekion.cricketgame.model.*;
+import com.tekion.cricketgame.service.MatchStateService;
 import com.tekion.cricketgame.service.PlayerMatchStatsService;
 import com.tekion.cricketgame.service.ScoreCardService;
 import com.tekion.cricketgame.service.TeamMatchStatsService;
@@ -25,6 +23,9 @@ public class Helper {
 
     @Autowired
     ScoreCardService scoreCardService;
+
+    @Autowired
+    MatchStateService matchStateService;
 
     private Ball simulateBall() {
         Random random = new Random();
@@ -48,53 +49,114 @@ public class Helper {
         }
     }
 
-    public void simulateMatch(Match match){
+    public MatchSummary simulateMatch(Match match, int ballsToBeSimulated,MatchState matchState) {
+        InningSummary firstInnings = simulateFirstInnings(match, ballsToBeSimulated,matchState);
 
-        InningSummary firstInnings = simulateFirstInnings(match);
-        InningSummary secondInnings = simulateSecondInnings(match);
+        if(matchState.getCurrentInnings().equals("second")){
+            InningSummary secondInnings;
+            if (ballsToBeSimulated> matchState.getBallsPlayedInFirstInnings()){
+                secondInnings = simulateSecondInnings(match,ballsToBeSimulated - matchState.getBallsPlayedInFirstInnings(), matchState);
+            } else {
+                secondInnings = simulateSecondInnings(match,ballsToBeSimulated,matchState);
+            }
+            scoreCardService.fillScoreCard(firstInnings,secondInnings,match);
+            return getMatchSummary(matchState);
+        }
+            scoreCardService.fillScoreCard(firstInnings,new InningSummary(),match);
+        return getMatchSummary(matchState);
+    }
+    private String determineMatchResult(MatchState matchState) {
 
-        scoreCardService.fillScoreCard(firstInnings,secondInnings,match);
+        if (matchState.isMatchOver()){
+            int firstInningsRuns = matchState.getRunsMadeInFirstInnings();
+            int secondInningsRuns = matchState.getRunsMadeInSecondInnings();
+
+            if (firstInningsRuns > secondInningsRuns) {
+                return "Team 1 won by " + (firstInningsRuns - secondInningsRuns) + " runs";
+            } else if (firstInningsRuns < secondInningsRuns) {
+                return "Team 2 won by " + (10 - matchState.getWicketsTakenInSecondInnings()) + " wickets";
+            } else {
+                return "Match tied";
+            }
+        }
+
+        return "Match Still In Play";
 
     }
 
-    private InningSummary simulateFirstInnings(Match match) {
+
+    private MatchSummary getMatchSummary(MatchState matchState){
+
+        MatchSummary matchSummary = new MatchSummary();
+
+        matchSummary.setTeam1Runs(matchState.getRunsMadeInFirstInnings());
+        matchSummary.setTeam1Wickets(matchState.getWicketsTakenInFirstInnings());
+
+        matchSummary.setTeam2Runs(matchState.getRunsMadeInSecondInnings());
+        matchSummary.setTeam2Wicket(matchState.getWicketsTakenInSecondInnings());
+
+        String matchResult = determineMatchResult(matchState);
+
+        matchSummary.setResult(matchResult);
+
+        return matchSummary;
+    }
 
 
-        int totalBalls = match.getOvers()*6;
-        int currentBatsman = 0;
-        int currentBaller = 1;
+    private InningSummary simulateFirstInnings(Match match, int ballsTobeSimulated, MatchState matchState) {
 
-        for(int ballNumber = 1; ballNumber <= totalBalls && currentBatsman < 11; ballNumber++){
+        int totalBalls = match.getOvers() * 6;
+        int currentBatsman = matchState.getCurrentFirstInningBatsman();
+        int currentBowler = matchState.getCurrentFirstInningBowler();
+        String currentInnings = matchState.getCurrentInnings();
+        int ballsPlayedInFirstInnings = matchState.getBallsPlayedInFirstInnings();
+
+        for(int ballNumber = 1; ballNumber <= ballsTobeSimulated && currentBatsman < 10; ballNumber++){
 
             if(ballNumber%6==0){
-                currentBaller = changeBowler(currentBaller);
+                currentBowler = changeBowler(currentBowler);
             }
             Ball result = simulateBall();
 
             switch (result){
 
                 case DOT_BALL:
-                    break;
                 case ONE_RUN:
                 case TWO_RUNS:
                 case THREE_RUNS:
                 case FOUR_RUNS:
                 case SIX_RUNS:
                     playerMatchStatsService.addBatsmanRuns(match.getTeam1().getPlayers().get(currentBatsman).getPlayerId(), match.getMatchId(),result.getValue());
-                    playerMatchStatsService.addBowlerRuns(match.getTeam2().getPlayers().get(currentBaller).getPlayerId(), match.getMatchId(),result.getValue());
+                    playerMatchStatsService.addBowlerRuns(match.getTeam2().getPlayers().get(currentBowler).getPlayerId(), match.getMatchId(),result.getValue());
                     teamMatchStatsService.addRuns(match.getTeam1().getTeamId(), match.getMatchId(), result.getValue());
                     break;
                 case OUT:
                     teamMatchStatsService.addWicket(match.getTeam1().getTeamId(), match.getMatchId());
-                    playerMatchStatsService.addWicket(match.getTeam2().getPlayers().get(currentBaller).getPlayerId(), match.getMatchId());
+                    playerMatchStatsService.addWicket(match.getTeam2().getPlayers().get(currentBowler).getPlayerId(), match.getMatchId());
                     currentBatsman++;
                     break;
             }
+            ballsPlayedInFirstInnings++;
+
+            if (ballsPlayedInFirstInnings >= totalBalls || currentBatsman >= 10) {
+                currentInnings = "second";
+                matchState.setFirstInningsOver(true);
+            }
+
         }
+        matchState.setCurrentFirstInningBatsman(currentBatsman);
+        matchState.setCurrentFirstInningBowler(currentBowler);
+        matchState.setCurrentInnings(currentInnings);
+        matchState.setBallsPlayedInFirstInnings(ballsPlayedInFirstInnings);
+        matchState.setRunsMadeInFirstInnings(teamMatchStatsService.getTeamRuns(match.getTeam1().getTeamId(), match.getMatchId()));
+        matchState.setWicketsTakenInFirstInnings(teamMatchStatsService.getTeamWickets(match.getTeam1().getTeamId(), match.getMatchId()));
+        matchStateService.save(matchState);
+
 
         return fillInnings(match.getTeam1(),match.getTeam2(), match.getMatchId());
 
     }
+
 
     private InningSummary fillInnings(Team team1,Team team2, Long matchId){
 
@@ -132,47 +194,75 @@ public class Helper {
         bowlingDetails.setTeamId(team2.getTeamId());
         bowlingDetails.setPlayerBallingList(playerBowlingStatsArrayList);
 
-        return new InningSummary(battingDetails,bowlingDetails);
+        int teamRuns = teamMatchStatsService.getTeamRuns(team1.getTeamId(), matchId);
+        int teamWickets = teamMatchStatsService.getTeamWickets(team1.getTeamId(), matchId);
+
+        return new InningSummary(battingDetails,bowlingDetails,teamRuns, teamWickets);
     }
 
-    private InningSummary simulateSecondInnings(Match match) {
 
-        int totalBalls = match.getOvers()*6;
-        int currentBatsman = 0;
-        int currentBaller = 1;
+    private InningSummary simulateSecondInnings(Match match, int ballToBeSimulated, MatchState matchState) {
 
-        for(int ballNumber = 1; ballNumber <= totalBalls && currentBatsman < 11; ballNumber++){
+        int totalBalls = match.getOvers() * 6;
+        int currentBatsman = matchState.getCurrentSecondInningBatsman();
+        int currentBowler = matchState.getCurrentSecondInningBowler();
+        String currentInnings = matchState.getCurrentInnings();
+        int ballsPlayedInSecondInnings = matchState.getBallsPlayedInSecondInnings();
+
+        for(int ballNumber = 1; ballNumber <= ballToBeSimulated && currentBatsman < 10; ballNumber++){
+
+            if (teamMatchStatsService.getTeamRuns(match.getTeam1().getTeamId(), match.getMatchId())< teamMatchStatsService.getTeamRuns(match.getTeam2().getTeamId(), match.getMatchId())){
+
+                matchState.setMatchOver(true);
+                matchState.setCurrentSecondInningBatsman(currentBatsman);
+                matchState.setCurrentSecondInningBowler(currentBowler);
+                matchState.setCurrentInnings(currentInnings);
+                matchState.setBallsPlayedInSecondInnings(ballsPlayedInSecondInnings);
+                matchState.setRunsMadeInSecondInnings(teamMatchStatsService.getTeamRuns(match.getTeam2().getTeamId(), match.getMatchId()));
+                matchState.setWicketsTakenInSecondInnings(teamMatchStatsService.getTeamWickets(match.getTeam2().getTeamId(), match.getMatchId()));
+                matchStateService.save(matchState);
+                return fillInnings(match.getTeam2(),match.getTeam1(), match.getMatchId());
+            }
 
             if(ballNumber%6 == 0){
-                currentBaller = changeBowler(currentBaller);
+                currentBowler = changeBowler(currentBowler);
             }
             Ball result = simulateBall();
 
             switch (result){
 
                 case DOT_BALL:
-                    break;
                 case ONE_RUN:
                 case TWO_RUNS:
                 case THREE_RUNS:
                 case FOUR_RUNS:
                 case SIX_RUNS:
                     playerMatchStatsService.addBatsmanRuns(match.getTeam2().getPlayers().get(currentBatsman).getPlayerId(), match.getMatchId(),result.getValue());
-                    playerMatchStatsService.addBowlerRuns(match.getTeam1().getPlayers().get(currentBaller).getPlayerId(), match.getMatchId(),result.getValue());
+                    playerMatchStatsService.addBowlerRuns(match.getTeam1().getPlayers().get(currentBowler).getPlayerId(), match.getMatchId(),result.getValue());
                     teamMatchStatsService.addRuns(match.getTeam2().getTeamId(), match.getMatchId(), result.getValue());
                     break;
                 case OUT:
                     teamMatchStatsService.addWicket(match.getTeam2().getTeamId(), match.getMatchId());
-                    playerMatchStatsService.addWicket(match.getTeam1().getPlayers().get(currentBaller).getPlayerId(), match.getMatchId());
+                    playerMatchStatsService.addWicket(match.getTeam1().getPlayers().get(currentBowler).getPlayerId(), match.getMatchId());
                     currentBatsman++;
                     break;
             }
 
-            if (teamMatchStatsService.getTeamRuns(match.getTeam1().getTeamId(), match.getMatchId())< teamMatchStatsService.getTeamRuns(match.getTeam2().getTeamId(), match.getMatchId())){
+            ballsPlayedInSecondInnings++;
 
-                return fillInnings(match.getTeam2(),match.getTeam1(), match.getMatchId());
+            if (ballsPlayedInSecondInnings >= totalBalls || currentBatsman>=10) {
+                matchState.setMatchOver(true);
+                break;
             }
+
         }
+        matchState.setCurrentSecondInningBatsman(currentBatsman);
+        matchState.setCurrentSecondInningBowler(currentBowler);
+        matchState.setCurrentInnings(currentInnings);
+        matchState.setBallsPlayedInSecondInnings(ballsPlayedInSecondInnings);
+        matchState.setRunsMadeInSecondInnings(teamMatchStatsService.getTeamRuns(match.getTeam2().getTeamId(), match.getMatchId()));
+        matchState.setWicketsTakenInSecondInnings(teamMatchStatsService.getTeamWickets(match.getTeam2().getTeamId(), match.getMatchId()));
+        matchStateService.save(matchState);
         return fillInnings(match.getTeam2(),match.getTeam1(), match.getMatchId());
 
     }
@@ -187,5 +277,5 @@ public class Helper {
     }
 }
 //}0LMNXi25wWL2KA3F
-//mysql --user avnadmin --password=AVNS_3Zuhwp9lCt47wJAHj60 --host mysql-himanshu-cricket-game.a.aivencloud.com --port 22237 defaultdb
+//mysql --user avnadmin --password=AVNS_3Zuhwp9lCt47wJAHj60 --host mysql-himanshu-cricket-game.a.aivencloud.com --port 22237 cricket-game
 //        AVNS_3Zuhwp9lCt47wJAHj60

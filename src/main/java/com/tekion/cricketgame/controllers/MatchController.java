@@ -1,7 +1,10 @@
 package com.tekion.cricketgame.controllers;
 
+import com.tekion.cricketgame.dto.MatchSummary;
 import com.tekion.cricketgame.model.Match;
+import com.tekion.cricketgame.model.MatchState;
 import com.tekion.cricketgame.service.MatchService;
+import com.tekion.cricketgame.service.MatchStateService;
 import com.tekion.cricketgame.utils.Helper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -16,6 +19,9 @@ public class MatchController {
 
     @Autowired
     private MatchService matchService;
+
+    @Autowired
+    private MatchStateService matchStateService;
 
     @Autowired
     private Helper helper;
@@ -58,12 +64,15 @@ public class MatchController {
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 
-    @GetMapping("/simulate/{matchId}")
-    public ResponseEntity<String> simulateMatch(@PathVariable Long matchId){
-        Match match = matchService.getMatchById(matchId);
-        helper.simulateMatch(match);
+    @GetMapping("/simulate/{matchId}/{ballsToBeSimulated}")
+    public ResponseEntity<MatchSummary> simulateMatch(@PathVariable Long matchId, @PathVariable int ballsToBeSimulated){
 
-        return new ResponseEntity<>("Match Simulated", HttpStatus.OK);
+        MatchState matchState = matchStateService.getMatchStateByMatchId(matchId);
+        Match match = matchService.getMatchById(matchId);
+
+        MatchSummary matchSummary = helper.simulateMatch(match,ballsToBeSimulated,matchState);
+
+        return new ResponseEntity<>(matchSummary, HttpStatus.OK);
 
     }
 

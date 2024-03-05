@@ -26,6 +26,17 @@ public class TeamMatchStatsService {
         }
     }
 
+    public int getTeamWickets(Long teamId, Long matchId){
+        TeamMatchStats teamMatchStats = findByTeamIdAndMatchId(teamId, matchId);
+        if (teamMatchStats != null){
+            return teamMatchStats.getTeamWickets();
+        } else {
+            teamMatchStats = new TeamMatchStats(teamId,matchId);
+            teamMatchStatsRepository.save(teamMatchStats);
+            return teamMatchStats.getTeamWickets();
+        }
+    }
+
 
 
     public void addRuns(Long teamId, Long matchId, int runsToAdd){
