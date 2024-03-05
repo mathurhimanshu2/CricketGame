@@ -2,10 +2,7 @@ package com.tekion.cricketgame.utils;
 
 import com.tekion.cricketgame.dto.*;
 import com.tekion.cricketgame.model.*;
-import com.tekion.cricketgame.service.MatchStateService;
-import com.tekion.cricketgame.service.PlayerMatchStatsService;
-import com.tekion.cricketgame.service.ScoreCardService;
-import com.tekion.cricketgame.service.TeamMatchStatsService;
+import com.tekion.cricketgame.service.*;
 import com.tekion.cricketgame.utils.enums.Ball;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -26,6 +23,9 @@ public class Helper {
 
     @Autowired
     MatchStateService matchStateService;
+
+    @Autowired
+    MatchService matchService;
 
     private Ball simulateBall() {
         Random random = new Random();
@@ -68,13 +68,22 @@ public class Helper {
     private String determineMatchResult(MatchState matchState) {
 
         if (matchState.isMatchOver()){
+            Match match = matchService.getMatchById(matchState.getMatchId());
             int firstInningsRuns = matchState.getRunsMadeInFirstInnings();
             int secondInningsRuns = matchState.getRunsMadeInSecondInnings();
+            String team1Name = match.getTeam1().getTeamName();
+            String team2Name = match.getTeam2().getTeamName();
 
             if (firstInningsRuns > secondInningsRuns) {
-                return "Team 1 won by " + (firstInningsRuns - secondInningsRuns) + " runs";
+                match.setWinner(team1Name);
+                matchService.updateMatch(match.getMatchId(), match);
+
+                return team1Name+" won by " + (firstInningsRuns - secondInningsRuns) + " runs";
             } else if (firstInningsRuns < secondInningsRuns) {
-                return "Team 2 won by " + (10 - matchState.getWicketsTakenInSecondInnings()) + " wickets";
+
+                match.setWinner(team2Name);
+                matchService.updateMatch(match.getMatchId(), match);
+                return team2Name+" won by " + (10 - matchState.getWicketsTakenInSecondInnings()) + " wickets";
             } else {
                 return "Match tied";
             }

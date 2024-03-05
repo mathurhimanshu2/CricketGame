@@ -68,12 +68,15 @@ public class MatchController {
     @GetMapping("/simulate/{matchId}/{ballsToBeSimulated}")
     public ResponseEntity<MatchSummary> simulateMatch(@PathVariable Long matchId, @PathVariable int ballsToBeSimulated){
 
-        MatchState matchState = matchStateService.getMatchStateByMatchId(matchId);
         Match match = matchService.getMatchById(matchId);
+        if (match != null) {
 
-        MatchSummary matchSummary = helper.simulateMatch(match,ballsToBeSimulated,matchState);
-
-        return new ResponseEntity<>(matchSummary, HttpStatus.OK);
+            MatchState matchState = matchStateService.getMatchStateByMatchId(matchId);
+            MatchSummary matchSummary = helper.simulateMatch(match,ballsToBeSimulated,matchState);
+            return new ResponseEntity<>(matchSummary, HttpStatus.OK);
+        } else {
+            throw new MatchNotFoundException("Match not found with id: " + matchId);
+        }
 
     }
 

@@ -21,13 +21,17 @@ public class Match {
     @JoinColumn(name = "team2_id")
     private Team team2;
 
+    @Column(name = "winner")
+    private String winner;
+
     public Match() {
     }
 
-    public Match(int overs, Team team1, Team team2) {
+    public Match(int overs, Team team1, Team team2, String winner) {
         this.overs = overs;
         this.team1 = team1;
         this.team2 = team2;
+        this.winner = winner;
     }
 
     public Long getMatchId() {
@@ -60,5 +64,13 @@ public class Match {
 
     public void setTeam2(Team team2) {
         this.team2 = team2;
+    }
+
+    public String getWinner() {
+        return winner;
+    }
+
+    public void setWinner(String winner) {
+        this.winner = winner;
     }
 }
