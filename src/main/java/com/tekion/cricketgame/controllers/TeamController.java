@@ -2,6 +2,8 @@ package com.tekion.cricketgame.controllers;
 
 import com.tekion.cricketgame.model.Team;
 import com.tekion.cricketgame.service.TeamService;
+import com.tekion.cricketgame.utils.exceptions.TeamNotFoundException;
+import com.tekion.cricketgame.utils.exceptions.TeamUpdateException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -28,7 +30,7 @@ public class TeamController {
         if (team != null) {
             return new ResponseEntity<>(team, HttpStatus.OK);
         } else {
-            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+            throw new TeamNotFoundException("Team not found with id: " + id);
         }
     }
 
@@ -44,7 +46,7 @@ public class TeamController {
         if (team != null) {
             return new ResponseEntity<>(team, HttpStatus.OK);
         } else {
-            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+            throw new TeamUpdateException("Failed to update team with id: " + id);
         }
     }
 

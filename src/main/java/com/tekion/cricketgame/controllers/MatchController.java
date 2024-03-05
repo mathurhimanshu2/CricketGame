@@ -6,6 +6,7 @@ import com.tekion.cricketgame.model.MatchState;
 import com.tekion.cricketgame.service.MatchService;
 import com.tekion.cricketgame.service.MatchStateService;
 import com.tekion.cricketgame.utils.Helper;
+import com.tekion.cricketgame.utils.exceptions.MatchNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -38,7 +39,7 @@ public class MatchController {
         if (match != null) {
             return new ResponseEntity<>(match, HttpStatus.OK);
         } else {
-            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+            throw new MatchNotFoundException("Match not found with id: " + id);
         }
     }
 
@@ -54,7 +55,7 @@ public class MatchController {
         if (match != null) {
             return new ResponseEntity<>(match, HttpStatus.OK);
         } else {
-            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+            throw new MatchNotFoundException("Match not found with id: " + id);
         }
     }
 
