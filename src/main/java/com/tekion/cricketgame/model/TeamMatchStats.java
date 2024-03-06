@@ -1,9 +1,15 @@
 package com.tekion.cricketgame.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
 
+@Data
+@NoArgsConstructor
+@JsonIgnoreProperties(ignoreUnknown = true)
 @Document(collection = "team_match_stats")
 public class TeamMatchStats {
     @Id
@@ -23,54 +29,6 @@ public class TeamMatchStats {
         this.teamRuns = 0;
         this.teamWickets = 0;
         this.ballsFaced = 0;
-    }
-
-    public String getId() {
-        return id;
-    }
-
-    public void setId(String id) {
-        this.id = id;
-    }
-
-    public Long getMatchId() {
-        return matchId;
-    }
-
-    public void setMatchId(Long matchId) {
-        this.matchId = matchId;
-    }
-
-    public Long getTeamId() {
-        return teamId;
-    }
-
-    public void setTeamId(Long teamId) {
-        this.teamId = teamId;
-    }
-
-    public int getTeamRuns() {
-        return teamRuns;
-    }
-
-    public void setTeamRuns(int teamRuns) {
-        this.teamRuns = teamRuns;
-    }
-
-    public int getTeamWickets() {
-        return teamWickets;
-    }
-
-    public void setTeamWickets(int teamWickets) {
-        this.teamWickets = teamWickets;
-    }
-
-    public int getBallsFaced() {
-        return ballsFaced;
-    }
-
-    public void setBallsFaced(int ballsFaced) {
-        this.ballsFaced = ballsFaced;
     }
     public void addRuns(int runs) {
         this.teamRuns += runs;
