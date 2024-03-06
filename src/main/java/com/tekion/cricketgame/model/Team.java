@@ -4,12 +4,16 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.persistence.*;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import java.util.List;
 
+@Data
+@NoArgsConstructor
 @Entity
 @Table(name = "team")
-@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"}) // Ignore Hibernate-specific properties
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class Team {
 
     @Id
@@ -23,35 +27,9 @@ public class Team {
     @JsonManagedReference
     private List<Player> players;
 
-    public Team() {
-    }
-
     public Team(String teamName, List<Player> players) {
         this.teamName = teamName;
         this.players = players;
     }
 
-    public Long getTeamId() {
-        return teamId;
-    }
-
-    public void setTeamId(Long teamId) {
-        this.teamId = teamId;
-    }
-
-    public String getTeamName() {
-        return teamName;
-    }
-
-    public void setTeamName(String teamName) {
-        this.teamName = teamName;
-    }
-
-    public List<Player> getPlayers() {
-        return players;
-    }
-
-    public void setPlayers(List<Player> players) {
-        this.players = players;
-    }
 }
