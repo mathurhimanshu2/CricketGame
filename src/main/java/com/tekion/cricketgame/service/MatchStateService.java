@@ -2,6 +2,7 @@ package com.tekion.cricketgame.service;
 
 import com.tekion.cricketgame.model.MatchState;
 import com.tekion.cricketgame.repository.IMatchStateRepository;
+import com.tekion.cricketgame.utils.enums.MatchStatus;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -24,7 +25,7 @@ public class MatchStateService {
     public MatchState initializeMatchState(Long matchId) {
         MatchState matchState = new MatchState();
         matchState.setMatchId(matchId);
-        matchState.setCurrentInnings("first");
+        matchState.setMatchStatus(MatchStatus.FIRST_INNINGS);
         return matchStateRepository.save(matchState);
     }
 
