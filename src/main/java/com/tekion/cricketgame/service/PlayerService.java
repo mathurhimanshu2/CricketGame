@@ -4,6 +4,7 @@ import com.tekion.cricketgame.model.Player;
 import com.tekion.cricketgame.model.Team;
 import com.tekion.cricketgame.repository.IPlayerRepository;
 import com.tekion.cricketgame.repository.ITeamRepository;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -12,13 +13,12 @@ import java.util.List;
 import java.util.Optional;
 
 @Service
+@RequiredArgsConstructor
 public class PlayerService {
 
-    @Autowired
-    private IPlayerRepository playerRepository;
+    private final IPlayerRepository playerRepository;
 
-    @Autowired
-    private ITeamRepository teamRepository;
+    private final TeamService teamService;
 
     public Player savePlayer(Player player) {
         return playerRepository.save(player);
@@ -50,8 +50,10 @@ public class PlayerService {
     @Transactional
     public Player addPlayerToTeam(Long teamId, Player player) {
         // Fetch the Team entity from the database
-        Team team = teamRepository.findById(teamId)
-                .orElseThrow(() -> new IllegalArgumentException("Team not found with id: " + teamId));
+        Team team = teamService.getTeamById(teamId);
+        if (team == null) {
+            throw new IllegalArgumentException("Team not found with id: " + teamId);
+        }
 
         player.setTeam(team);
 

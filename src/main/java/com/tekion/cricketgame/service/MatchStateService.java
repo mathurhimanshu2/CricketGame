@@ -2,26 +2,30 @@ package com.tekion.cricketgame.service;
 
 import com.tekion.cricketgame.model.MatchState;
 import com.tekion.cricketgame.repository.IMatchStateRepository;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
+@RequiredArgsConstructor
 public class MatchStateService {
 
-    @Autowired
-    private IMatchStateRepository matchStateRepository;
+    private final IMatchStateRepository matchStateRepository;
 
     public MatchState getMatchStateByMatchId(Long matchId){
         MatchState matchState = matchStateRepository.findByMatchId(matchId);
-        if (matchState!=null){
+        if (matchState != null) {
             return matchState;
         } else {
-            matchState = new MatchState();
-            matchState.setMatchId(matchId);
-            matchState.setCurrentInnings("first");
-            matchStateRepository.save(matchState);
-            return matchState;
+            return initializeMatchState(matchId);
         }
+    }
+    @Transactional
+    public MatchState initializeMatchState(Long matchId) {
+        MatchState matchState = new MatchState();
+        matchState.setMatchId(matchId);
+        matchState.setCurrentInnings("first");
+        return matchStateRepository.save(matchState);
     }
 
     public MatchState save(MatchState matchState){

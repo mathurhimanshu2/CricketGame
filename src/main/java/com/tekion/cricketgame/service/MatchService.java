@@ -3,9 +3,8 @@ package com.tekion.cricketgame.service;
 import com.tekion.cricketgame.model.Match;
 import com.tekion.cricketgame.model.Team;
 import com.tekion.cricketgame.repository.IMatchRepository;
-import com.tekion.cricketgame.repository.ITeamRepository;
 import jakarta.persistence.EntityNotFoundException;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -13,13 +12,13 @@ import java.util.List;
 import java.util.Optional;
 
 @Service
+@RequiredArgsConstructor
 public class MatchService {
 
-    @Autowired
-    private IMatchRepository matchRepository;
+    private final IMatchRepository matchRepository;
 
-    @Autowired
-    private ITeamRepository teamRepository;
+    private final TeamService teamService;
+
 
     public List<Match> getAllMatches() {
         return matchRepository.findAll();
@@ -51,15 +50,18 @@ public class MatchService {
     }
 
     @Transactional
-    public Match createMatch(Match match) {
-        Team team1 = teamRepository.findById(match.getTeam1().getTeamId())
-                .orElseThrow(() -> new EntityNotFoundException("Team not found with id: " + match.getTeam1().getTeamId()));
-        Team team2 = teamRepository.findById(match.getTeam2().getTeamId())
-                .orElseThrow(() -> new EntityNotFoundException("Team not found with id: " + match.getTeam2().getTeamId()));
+    public Match createMatch(MatchDTO matchDTO) {
+        Team team1 = teamService.getTeamById(matchDTO.getTeam1Id());
+        if (team1 == null) {
+            throw new EntityNotFoundException("Team not found with id: " + matchDTO.getTeam1Id());
+        }
 
-        Match cricketMatch = new Match(match.getOvers(), team1, team2);
+        Team team2 = teamService.getTeamById(matchDTO.getTeam2Id());
+        if (team2 == null) {
+            throw new EntityNotFoundException("Team not found with id: " + matchDTO.getTeam2Id());
+        }
 
-        // Save the match entity
+        Match cricketMatch = new Match(matchDTO.getOvers(), team1, team2);
         return matchRepository.save(cricketMatch);
     }
 }

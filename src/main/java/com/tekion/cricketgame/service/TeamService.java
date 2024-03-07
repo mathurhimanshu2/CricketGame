@@ -3,6 +3,7 @@ package com.tekion.cricketgame.service;
 import com.tekion.cricketgame.model.Player;
 import com.tekion.cricketgame.model.Team;
 import com.tekion.cricketgame.repository.ITeamRepository;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -10,9 +11,9 @@ import java.util.List;
 import java.util.Optional;
 
 @Service
+@RequiredArgsConstructor
 public class TeamService {
-    @Autowired
-    private ITeamRepository teamRepository;
+    private final ITeamRepository teamRepository;
 
     public List<Team> getAllTeams() {
         return teamRepository.findAll();
