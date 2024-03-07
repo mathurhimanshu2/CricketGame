@@ -7,15 +7,17 @@ import com.tekion.cricketgame.model.TeamMatchStats;
 import com.tekion.cricketgame.repository.IPlayerMatchStatsRepository;
 import com.tekion.cricketgame.repository.IScoreBoardRepository;
 import com.tekion.cricketgame.repository.ITeamMatchStatsRepository;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 import org.springframework.stereotype.Service;
 
 @Service
+@RequiredArgsConstructor
 public class ScoreCardService {
 
-    @Autowired
-    IScoreBoardRepository scoreBoardRepository;
+
+    private final IScoreBoardRepository scoreBoardRepository;
 
     public void fillScoreCard(InningSummary firstInnings,InningSummary secondInnings,Match match){
         ScoreBoard scoreBoard = scoreBoardRepository.findByMatchId(match.getMatchId());

@@ -2,42 +2,38 @@ package com.tekion.cricketgame.service;
 
 import com.tekion.cricketgame.model.TeamMatchStats;
 import com.tekion.cricketgame.repository.ITeamMatchStatsRepository;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 @Service
+@RequiredArgsConstructor
 public class TeamMatchStatsService {
 
-    @Autowired
-    ITeamMatchStatsRepository teamMatchStatsRepository;
+    private final ITeamMatchStatsRepository teamMatchStatsRepository;
 
     public TeamMatchStats findByTeamIdAndMatchId(Long teamId, Long matchId) {
         return teamMatchStatsRepository.findByTeamIdAndMatchId(teamId, matchId);
     }
 
-    public int getTeamRuns(Long teamId,Long matchId){
-        TeamMatchStats teamMatchStats = findByTeamIdAndMatchId(teamId,matchId);
-        if (teamMatchStats != null){
-            return teamMatchStats.getTeamRuns();
-        } else {
-            teamMatchStats = new TeamMatchStats(teamId,matchId);
-            teamMatchStatsRepository.save(teamMatchStats);
-            return teamMatchStats.getTeamRuns();
-        }
+    public int getTeamRuns(Long teamId, Long matchId) {
+        TeamMatchStats teamMatchStats = findOrCreateTeamMatchStats(teamId, matchId);
+        return teamMatchStats.getTeamRuns();
     }
 
-    public int getTeamWickets(Long teamId, Long matchId){
-        TeamMatchStats teamMatchStats = findByTeamIdAndMatchId(teamId, matchId);
-        if (teamMatchStats != null){
-            return teamMatchStats.getTeamWickets();
-        } else {
-            teamMatchStats = new TeamMatchStats(teamId,matchId);
-            teamMatchStatsRepository.save(teamMatchStats);
-            return teamMatchStats.getTeamWickets();
-        }
+    public int getTeamWickets(Long teamId, Long matchId) {
+        TeamMatchStats teamMatchStats = findOrCreateTeamMatchStats(teamId, matchId);
+        return teamMatchStats.getTeamWickets();
     }
 
-
+    private TeamMatchStats findOrCreateTeamMatchStats(Long teamId, Long matchId) {
+        TeamMatchStats teamMatchStats = teamMatchStatsRepository.findByTeamIdAndMatchId(teamId, matchId);
+        if (teamMatchStats == null) {
+            teamMatchStats = new TeamMatchStats(teamId, matchId);
+            teamMatchStatsRepository.save(teamMatchStats);
+        }
+        return teamMatchStats;
+    }
 
     public void addRuns(Long teamId, Long matchId, int runsToAdd){
         TeamMatchStats teamMatchStats = findByTeamIdAndMatchId(teamId,matchId);
