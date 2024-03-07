@@ -140,7 +140,6 @@ public class Helper {
             }
             ballsPlayedInFirstInnings++;
 
-
             if (ballsPlayedInFirstInnings >= totalBalls || currentBatsman >= 10) {
                 matchState.setMatchStatus(MatchStatus.SECOND_INNINGS);
             }
