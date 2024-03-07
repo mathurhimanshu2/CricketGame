@@ -2,13 +2,10 @@ package com.tekion.cricketgame.service;
 
 import com.tekion.cricketgame.model.PlayerMatchStats;
 import com.tekion.cricketgame.repository.IPlayerMatchStatsRepository;
-import com.tekion.cricketgame.repository.ITeamMatchStatsRepository;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -83,4 +80,18 @@ public class PlayerMatchStatsService {
             playerMatchStatsRepository.save(playerMatchStats);
         }
     }
+
+    public void setBatsmanOut(Long playerId, Long matchId) {
+        PlayerMatchStats playerMatchStats = playerMatchStatsRepository.findByPlayerIdAndMatchId(playerId, matchId);
+        if (playerMatchStats != null) {
+            playerMatchStats.setNotOut(false);
+            playerMatchStatsRepository.save(playerMatchStats);
+        } else {
+            playerMatchStats = new PlayerMatchStats(playerId, matchId);
+            playerMatchStats.setNotOut(false);
+            playerMatchStats.setBallsFaced(1);
+            playerMatchStatsRepository.save(playerMatchStats);
+        }
+    }
+
 }

@@ -1,11 +1,13 @@
 package com.tekion.cricketgame.controllers;
 
+import com.tekion.cricketgame.dto.MatchDTO;
 import com.tekion.cricketgame.dto.MatchSummary;
 import com.tekion.cricketgame.model.Match;
 import com.tekion.cricketgame.model.MatchState;
 import com.tekion.cricketgame.service.MatchService;
 import com.tekion.cricketgame.service.MatchStateService;
 import com.tekion.cricketgame.utils.Helper;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -14,17 +16,16 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
+@RequiredArgsConstructor
 @RequestMapping("/match")
 public class MatchController {
 
-    @Autowired
-    private MatchService matchService;
+    private final MatchService matchService;
 
-    @Autowired
-    private MatchStateService matchStateService;
 
-    @Autowired
-    private Helper helper;
+    private final MatchStateService matchStateService;
+
+    private final Helper helper;
 
     @GetMapping
     public ResponseEntity<List<Match>> getAllMatches() {
@@ -43,8 +44,8 @@ public class MatchController {
     }
 
     @PostMapping
-    public ResponseEntity<Match> createMatch(@RequestBody Match match) {
-        Match savedMatch = matchService.createMatch(match);
+    public ResponseEntity<Match> createMatch(@RequestBody MatchDTO matchDTO) {
+        Match savedMatch = matchService.createMatch(matchDTO);
         return new ResponseEntity<>(savedMatch, HttpStatus.CREATED);
     }
 

@@ -7,6 +7,7 @@ import com.tekion.cricketgame.service.PlayerMatchStatsService;
 import com.tekion.cricketgame.service.ScoreCardService;
 import com.tekion.cricketgame.service.TeamMatchStatsService;
 import com.tekion.cricketgame.utils.enums.Ball;
+import com.tekion.cricketgame.utils.enums.MatchStatus;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -52,7 +53,7 @@ public class Helper {
     public MatchSummary simulateMatch(Match match, int ballsToBeSimulated,MatchState matchState) {
         InningSummary firstInnings = simulateFirstInnings(match, ballsToBeSimulated,matchState);
 
-        if(matchState.getCurrentInnings().equals("second")){
+        if(matchState.getMatchStatus()==MatchStatus.SECOND_INNINGS){
             InningSummary secondInnings;
             if (ballsToBeSimulated> matchState.getBallsPlayedInFirstInnings()){
                 secondInnings = simulateSecondInnings(match,ballsToBeSimulated - matchState.getBallsPlayedInFirstInnings(), matchState);
@@ -67,7 +68,7 @@ public class Helper {
     }
     private String determineMatchResult(MatchState matchState) {
 
-        if (matchState.isMatchOver()){
+        if (matchState.getMatchStatus() == MatchStatus.MATCH_OVER){
             int firstInningsRuns = matchState.getRunsMadeInFirstInnings();
             int secondInningsRuns = matchState.getRunsMadeInSecondInnings();
 
@@ -108,7 +109,7 @@ public class Helper {
         int totalBalls = match.getOvers() * 6;
         int currentBatsman = matchState.getCurrentFirstInningBatsman();
         int currentBowler = matchState.getCurrentFirstInningBowler();
-        String currentInnings = matchState.getCurrentInnings();
+
         int ballsPlayedInFirstInnings = matchState.getBallsPlayedInFirstInnings();
 
         for(int ballNumber = 1; ballNumber <= ballsTobeSimulated && currentBatsman < 10; ballNumber++){
@@ -126,27 +127,33 @@ public class Helper {
                 case THREE_RUNS:
                 case FOUR_RUNS:
                 case SIX_RUNS:
-                    playerMatchStatsService.addBatsmanRuns(match.getTeam1().getPlayers().get(currentBatsman).getPlayerId(), match.getMatchId(),result.getValue());
-                    playerMatchStatsService.addBowlerRuns(match.getTeam2().getPlayers().get(currentBowler).getPlayerId(), match.getMatchId(),result.getValue());
+                    playerMatchStatsService.upsertBatsmanRuns(match.getTeam1().getPlayers().get(currentBatsman).getPlayerId(), match.getMatchId(),result.getValue());
+                    playerMatchStatsService.upsertBowlerRuns(match.getTeam2().getPlayers().get(currentBowler).getPlayerId(), match.getMatchId(),result.getValue());
                     teamMatchStatsService.addRuns(match.getTeam1().getTeamId(), match.getMatchId(), result.getValue());
                     break;
                 case OUT:
                     teamMatchStatsService.addWicket(match.getTeam1().getTeamId(), match.getMatchId());
                     playerMatchStatsService.addWicket(match.getTeam2().getPlayers().get(currentBowler).getPlayerId(), match.getMatchId());
+                    playerMatchStatsService.setBatsmanOut(match.getTeam1().getPlayers().get(currentBatsman).getPlayerId(), match.getMatchId());
                     currentBatsman++;
                     break;
             }
             ballsPlayedInFirstInnings++;
 
+
             if (ballsPlayedInFirstInnings >= totalBalls || currentBatsman >= 10) {
-                currentInnings = "second";
-                matchState.setFirstInningsOver(true);
+                matchState.setMatchStatus(MatchStatus.SECOND_INNINGS);
             }
+            matchState.setCurrentFirstInningBatsman(currentBatsman);
+            matchState.setCurrentFirstInningBowler(currentBowler);
+            matchState.setBallsPlayedInFirstInnings(ballsPlayedInFirstInnings);
+            matchState.setRunsMadeInFirstInnings(teamMatchStatsService.getTeamRuns(match.getTeam1().getTeamId(), match.getMatchId()));
+            matchState.setWicketsTakenInFirstInnings(teamMatchStatsService.getTeamWickets(match.getTeam1().getTeamId(), match.getMatchId()));
+            matchStateService.save(matchState);
 
         }
         matchState.setCurrentFirstInningBatsman(currentBatsman);
         matchState.setCurrentFirstInningBowler(currentBowler);
-        matchState.setCurrentInnings(currentInnings);
         matchState.setBallsPlayedInFirstInnings(ballsPlayedInFirstInnings);
         matchState.setRunsMadeInFirstInnings(teamMatchStatsService.getTeamRuns(match.getTeam1().getTeamId(), match.getMatchId()));
         matchState.setWicketsTakenInFirstInnings(teamMatchStatsService.getTeamWickets(match.getTeam1().getTeamId(), match.getMatchId()));
@@ -206,17 +213,15 @@ public class Helper {
         int totalBalls = match.getOvers() * 6;
         int currentBatsman = matchState.getCurrentSecondInningBatsman();
         int currentBowler = matchState.getCurrentSecondInningBowler();
-        String currentInnings = matchState.getCurrentInnings();
         int ballsPlayedInSecondInnings = matchState.getBallsPlayedInSecondInnings();
 
         for(int ballNumber = 1; ballNumber <= ballToBeSimulated && currentBatsman < 10; ballNumber++){
 
             if (teamMatchStatsService.getTeamRuns(match.getTeam1().getTeamId(), match.getMatchId())< teamMatchStatsService.getTeamRuns(match.getTeam2().getTeamId(), match.getMatchId())){
 
-                matchState.setMatchOver(true);
                 matchState.setCurrentSecondInningBatsman(currentBatsman);
                 matchState.setCurrentSecondInningBowler(currentBowler);
-                matchState.setCurrentInnings(currentInnings);
+                matchState.setMatchStatus(MatchStatus.MATCH_OVER);
                 matchState.setBallsPlayedInSecondInnings(ballsPlayedInSecondInnings);
                 matchState.setRunsMadeInSecondInnings(teamMatchStatsService.getTeamRuns(match.getTeam2().getTeamId(), match.getMatchId()));
                 matchState.setWicketsTakenInSecondInnings(teamMatchStatsService.getTeamWickets(match.getTeam2().getTeamId(), match.getMatchId()));
@@ -237,28 +242,34 @@ public class Helper {
                 case THREE_RUNS:
                 case FOUR_RUNS:
                 case SIX_RUNS:
-                    playerMatchStatsService.addBatsmanRuns(match.getTeam2().getPlayers().get(currentBatsman).getPlayerId(), match.getMatchId(),result.getValue());
-                    playerMatchStatsService.addBowlerRuns(match.getTeam1().getPlayers().get(currentBowler).getPlayerId(), match.getMatchId(),result.getValue());
+                    playerMatchStatsService.upsertBatsmanRuns(match.getTeam2().getPlayers().get(currentBatsman).getPlayerId(), match.getMatchId(),result.getValue());
+                    playerMatchStatsService.upsertBowlerRuns(match.getTeam1().getPlayers().get(currentBowler).getPlayerId(), match.getMatchId(),result.getValue());
                     teamMatchStatsService.addRuns(match.getTeam2().getTeamId(), match.getMatchId(), result.getValue());
                     break;
                 case OUT:
                     teamMatchStatsService.addWicket(match.getTeam2().getTeamId(), match.getMatchId());
+                    playerMatchStatsService.setBatsmanOut(match.getTeam2().getPlayers().get(currentBatsman).getPlayerId(), match.getMatchId());
                     playerMatchStatsService.addWicket(match.getTeam1().getPlayers().get(currentBowler).getPlayerId(), match.getMatchId());
                     currentBatsman++;
                     break;
             }
 
             ballsPlayedInSecondInnings++;
+            matchState.setCurrentSecondInningBatsman(currentBatsman);
+            matchState.setCurrentSecondInningBowler(currentBowler);
+            matchState.setBallsPlayedInSecondInnings(ballsPlayedInSecondInnings);
+            matchState.setRunsMadeInSecondInnings(teamMatchStatsService.getTeamRuns(match.getTeam2().getTeamId(), match.getMatchId()));
+            matchState.setWicketsTakenInSecondInnings(teamMatchStatsService.getTeamWickets(match.getTeam2().getTeamId(), match.getMatchId()));
+            matchStateService.save(matchState);
 
             if (ballsPlayedInSecondInnings >= totalBalls || currentBatsman>=10) {
-                matchState.setMatchOver(true);
+                matchState.setMatchStatus(MatchStatus.MATCH_OVER);
                 break;
             }
 
         }
         matchState.setCurrentSecondInningBatsman(currentBatsman);
         matchState.setCurrentSecondInningBowler(currentBowler);
-        matchState.setCurrentInnings(currentInnings);
         matchState.setBallsPlayedInSecondInnings(ballsPlayedInSecondInnings);
         matchState.setRunsMadeInSecondInnings(teamMatchStatsService.getTeamRuns(match.getTeam2().getTeamId(), match.getMatchId()));
         matchState.setWicketsTakenInSecondInnings(teamMatchStatsService.getTeamWickets(match.getTeam2().getTeamId(), match.getMatchId()));

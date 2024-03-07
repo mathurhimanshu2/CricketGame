@@ -2,6 +2,7 @@ package com.tekion.cricketgame.controllers;
 
 import com.tekion.cricketgame.model.Team;
 import com.tekion.cricketgame.service.TeamService;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -10,11 +11,11 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
+@RequiredArgsConstructor
 @RequestMapping("/team")
 public class TeamController {
 
-    @Autowired
-    private TeamService teamService;
+    private final TeamService teamService;
 
     @GetMapping
     public ResponseEntity<List<Team>> getAllTeams() {
