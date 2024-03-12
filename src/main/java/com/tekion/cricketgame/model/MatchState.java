@@ -1,6 +1,7 @@
 package com.tekion.cricketgame.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.tekion.cricketgame.utils.enums.MatchStatus;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -30,7 +31,7 @@ public class MatchState {
     private int ballsPlayedInFirstInnings;
 
     private int ballsPlayedInSecondInnings;
-    private String matchStatus;
+    private MatchStatus matchStatus;
 
     private boolean firstInningsOver;
 
